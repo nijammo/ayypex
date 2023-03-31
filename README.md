@@ -2,7 +2,7 @@
 
 A cheat for Apex Legends, for use with Proton on Linux.
 It is internal, using a Vulkan layer to render directly on the game's window.
-The cheat itself should be portable, meaning that if you can provide it with a on-draw and on-tick function then it should be able to also run externally.
+The cheat itself should be portable, meaning that if you can provide it with a on-draw, on-tick function and change the memory interface then it should be able to also run externally.
 
 ## Features
 
