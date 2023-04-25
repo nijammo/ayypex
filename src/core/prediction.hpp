@@ -14,14 +14,19 @@ struct prediction_ctx {
 };
 
 inline bool calculate_pitch(prediction_ctx ctx, vec2 delta, float *pitch) {
-    float v0 = ctx.launch_velocity;
+    float v = ctx.launch_velocity;
     float g = ctx.gravity;
-    float root = v0 * v0 * v0 * v0 - g * (g * delta.x * delta.x + 2.0f * delta.y * v0 * v0);
-    if (root > 0.0f) {
-        *pitch = std::atan((v0 * v0 - std::sqrt(root)) / (g * delta.x));
-        return true;
+    float x = delta.x;
+    float y = delta.y;
+
+    float theta = std::atan((v * v + std::sqrt(v * v * v * v - g * (g * x * x + 2 * y * v * v))) / (g * x));
+    if (std::isnan(theta)) {
+        return false;
     }
-    return false;
+    
+    *pitch = theta;
+
+    return true;
 }
 
 inline bool solve_trajectory(vec3 currentPosition, vec3 extrapolatedPosition, prediction_ctx &ctx) {
@@ -43,20 +48,17 @@ inline bool solve_trajectory(vec3 currentPosition, vec3 extrapolatedPosition, pr
 }
 
 inline bool predict_trajectory(prediction_ctx &ctx) {
-    float MAX_TIME = 1.0f, TIME_STEP = (1.0f / 256.0f);
-    for (float currentTime = 0.0f; currentTime <= MAX_TIME; currentTime += TIME_STEP) {
-        float travelTime = ctx.distance / ctx.launch_velocity;
-        vec3 extrapolatedPosition = vec3::extrapolate(ctx.target_position, ctx.target_velocity, travelTime);
+    // Calculate travel time to current target
+    vec2 displacement = {std::sqrt(ctx.target_velocity.x * ctx.target_velocity.x + ctx.target_velocity.y * ctx.target_velocity.y), ctx.target_velocity.z};
+    float flight_time = displacement.x / (std::cos(ctx.pitch) * ctx.launch_velocity);
 
-        if (!solve_trajectory(ctx.launch_position, extrapolatedPosition, ctx)) {
-            continue;
-        }
-        if (ctx.time_of_flight < currentTime) {
-            ctx.success = true;
-            return true;
-        }
-    }
-    ctx.success = false;
-    return false;
+    // Calculate new travel time after extrapolation
+    vec3 extrapolated = vec3::extrapolate(ctx.target_position, ctx.target_velocity, flight_time);
+    displacement = {std::sqrt(extrapolated.x * extrapolated.x + extrapolated.y * extrapolated.y), extrapolated.z};
+
+    flight_time = displacement.x / (std::cos(ctx.pitch) * ctx.launch_velocity);
+
+    ctx.success = solve_trajectory(ctx.target_position, extrapolated, ctx);
+    return ctx.success;
 }
 } // namespace siege::prediction

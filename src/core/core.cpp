@@ -66,7 +66,6 @@ namespace core {
     }
 
     void draw() {
-
         auto now = timer.now();
         float delta_time = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_tick).count();
         core::tick(delta_time);

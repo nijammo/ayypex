@@ -21,18 +21,10 @@
  * IN THE SOFTWARE.
  */
 
-// Note for portfolio reviewers:
-// This is mostly just copy+pasted code from MangoHud and Mesa's Vulkan overlay project, ported to a small codebase.
-// It allows a program to hook the Vulkan rendering API and provides easy-to-use on-frame-rendered and on-first-frame callbacks to be used exclusively
-// with Dear ImGui, abstracting away all the difficulties of directly using Vulkan.
-// I kept the license message because a large part of this code is unmodified.
-// All files in the vk_hook directory are either not mine, or partially modified.
-
-#include "../imgui_hook.hpp"
-#include "font_default.hpp"
+#include "../imgui_hook.h"
+#include "font_default.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "overlay_params.hpp"
 #include "vk_enum_to_str.h"
 #include <fstream>
 #include <inttypes.h>
@@ -47,11 +39,24 @@
 #include <vulkan/vk_util.h>
 #include <vulkan/vulkan_core.h>
 
+struct overlay_params {
+        bool no_small_font;
+        float font_size, font_scale;
+        float font_size_text;
+        float font_scale_media_player;
+        float background_alpha, alpha;
+        float cellpadding_y;
+        std::string font_file, font_file_text;
+        uint32_t font_glyph_ranges;
+        size_t font_params_hash;
+        uint32_t width, height;
+};
+
 #define VK_CHECK(expr)                                                                                                                                                                                                                                                                                     \
     do {                                                                                                                                                                                                                                                                                                   \
         VkResult __result = (expr);                                                                                                                                                                                                                                                                        \
         if (__result != VK_SUCCESS) {                                                                                                                                                                                                                                                                      \
-            printf("fail !!!\n");                                                                                                                                                                                                                                                                          \
+            printf("error\n");                                                                                                                                                                                                                                                                          \
         }                                                                                                                                                                                                                                                                                                  \
     } while (0)
 
@@ -475,7 +480,7 @@ static void check_fonts(struct swapchain_data *data) {
 
     if (params.font_params_hash != data->sw_stats.font_params_hash) {
         VkDescriptorSet desc_set = (VkDescriptorSet)data->font_atlas->TexID;
-        create_fonts(data->font_atlas, instance_data->params, data->sw_stats.font1, data->sw_stats.font_text);
+        create_fonts(data->font_atlas, data->sw_stats.font1, data->sw_stats.font_text);
         unsigned char *pixels;
         int width, height;
         data->font_atlas->GetTexDataAsAlpha8(&pixels, &width, &height);
@@ -615,7 +620,7 @@ static struct overlay_draw *render_swapchain_display(struct swapchain_data *data
     ImDrawData *draw_data = ImGui::GetDrawData();
     struct device_data *device_data = data->device;
 
-    if (!draw_data || draw_data->TotalVtxCount == 0 || device_data->instance->params.no_display)
+    if (!draw_data || draw_data->TotalVtxCount == 0)
         return nullptr;
 
     struct overlay_draw *draw = get_overlay_draw(data);
@@ -1201,9 +1206,7 @@ static VkResult overlay_CreateSwapchainKHR(VkDevice device, const VkSwapchainCre
     createInfo.imageUsage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     struct device_data *device_data = FIND(struct device_data, device);
-    array<VkPresentModeKHR, 4> modes = {VK_PRESENT_MODE_FIFO_RELAXED_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR};
-    if (device_data->instance->params.vsync < 4)
-        createInfo.presentMode = modes[device_data->instance->params.vsync];
+    //array<VkPresentModeKHR, 4> modes = {VK_PRESENT_MODE_FIFO_RELAXED_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR};
 
     VkResult result = device_data->vtable.CreateSwapchainKHR(device, &createInfo, pAllocator, pSwapchain);
     if (result != VK_SUCCESS)
@@ -1439,8 +1442,8 @@ static VkResult overlay_AllocateCommandBuffers(VkDevice device, const VkCommandB
     return result;
 }
 
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetInstanceProcAddr(VkInstance instance, const char *funcName);
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetDeviceProcAddr(VkDevice device, const char *funcName);
+extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetInstanceProcAddr(VkInstance instance, const char *funcName);
+extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetDeviceProcAddr(VkDevice device, const char *funcName);
 
 std::vector<std::pair<std::string, void *>> name_to_funcptr_map{{"vkGetInstanceProcAddr", (void *)overlay_GetInstanceProcAddr},
                                                                 {"vkGetDeviceProcAddr", (void *)overlay_GetDeviceProcAddr},
@@ -1460,7 +1463,7 @@ static void *find_ptr(const char *name) {
     return NULL;
 }
 
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetInstanceProcAddr(VkInstance instance, const char *funcName) {
+extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetInstanceProcAddr(VkInstance instance, const char *funcName) {
     void *ptr = find_ptr(funcName);
     if (ptr)
         return reinterpret_cast<PFN_vkVoidFunction>(ptr);
@@ -1473,11 +1476,14 @@ extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetI
     return instance_data->vtable.GetInstanceProcAddr(instance, funcName);
 }
 
-extern "C" VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetDeviceProcAddr(VkDevice dev, const char *funcName) {
+extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetDeviceProcAddr(VkDevice dev, const char *funcName) {
     void *ptr = find_ptr(funcName);
+
+    std::cout << "overlay_GetDeviceProcAddr: " << funcName << std::endl;
+
     if (ptr)
         return reinterpret_cast<PFN_vkVoidFunction>(ptr);
-
+    
     if (dev == NULL)
         return NULL;
 

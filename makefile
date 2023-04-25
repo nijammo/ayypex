@@ -5,10 +5,10 @@ LDFLAGS=-ldl
 
 SOURCES = $(shell find src -type f -name "*.c*")
 
-.PHONY: all $(PROGRAM) clean install
+.PHONY: all clean install
 
 all:
-	$(CXX) $(LDFLAGS) $(CXXFLAGS) $(SOURCES) -o $(PROGRAM)
+	$(CXX) $(LDFLAGS) $(CXXFLAGS) $(SOURCES) -o $(LIBRARY)
 
 install:
 	sudo mkdir -p /usr/lib/ayypex

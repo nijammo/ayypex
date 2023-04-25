@@ -9,8 +9,8 @@ class AimAssist : public Module {
     Player target;
 
     // Randomly chosen values
-    PID yaw_controller = PID(22.1, 0.2, 0.01, -15.0, 15.0);
-    PID pitch_controller = PID(17.6, 0.2, 0.01, -15.0, 15.0);
+    PID yaw_controller = PID(17.1, -5.8, 0.2, -15.0, 15.0);
+    PID pitch_controller = PID(17.5, -5.8, 0.2, -15.0, 15.0);
 
     AimAssist() : Module() {
         active = true;

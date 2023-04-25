@@ -2,7 +2,7 @@
 
 #include "../core/core.h"
 #include <cstdint>
-#include "vmt_hook.hpp"
+#include "vmt_hook.h"
 
 #include <chrono>
 
@@ -16,7 +16,7 @@ inline uintptr_t hkCreateMove(void *a1, int a2, float a3, bool a4) {
     float unk;
     bool unk1;
 
-    // Find these registers in IDA
+    // Hooking on Proton sure is fun
     asm("mov %%rcx, %0\n"
         "mov %%edx, %1\n"
         "movss %%xmm2, %2\n"

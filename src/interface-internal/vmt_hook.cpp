@@ -1,4 +1,4 @@
-#include "vmt_hook.hpp"
+#include "vmt_hook.h"
 
 vmt_hook::vmt_hook() {}
 
