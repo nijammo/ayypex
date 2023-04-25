@@ -1479,11 +1479,8 @@ extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetInstanceProcAddr(
 extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL overlay_GetDeviceProcAddr(VkDevice dev, const char *funcName) {
     void *ptr = find_ptr(funcName);
 
-    std::cout << "overlay_GetDeviceProcAddr: " << funcName << std::endl;
-
     if (ptr)
         return reinterpret_cast<PFN_vkVoidFunction>(ptr);
-    
     if (dev == NULL)
         return NULL;
 
