@@ -9,9 +9,11 @@ The cheat itself should be portable, meaning that if you can provide it with a o
 Currently, ayypex has
 
 * Wallhack
-* Aim Assist
+* Glow
+* Recoil control
+* Aim Assist (currently broken)
 
-The aim assist might be a bit too aggressive, you might want to modify the PID controller coefficients in core/modules/aimassist.h
+~~The aim assist might be a bit too aggressive, you might want to modify the PID controller coefficients in core/modules/aimassist.h~~
 
 ## Installing
 
