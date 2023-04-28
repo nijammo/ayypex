@@ -6,7 +6,7 @@
 
 class AimAssist : public Module {
     public:
-    Player target;
+    static Player target;
 
     // Randomly chosen values
     PID yaw_controller = PID(17.1, -5.8, 0.2, -15.0, 15.0);
@@ -16,6 +16,9 @@ class AimAssist : public Module {
         active = true;
     }
     
+    static void silent_aim();
+    static void before_createmove();
+    static void after_createmove();
     void tick(float delta_time) override;
     void draw() override;
     void init() override;

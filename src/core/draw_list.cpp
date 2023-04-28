@@ -19,8 +19,16 @@ void DrawList::add_rect(vec2 start, vec2 end, vec3 color) {
     ImGui::GetBackgroundDrawList()->AddRect(ImVec2(start.x, start.y), ImVec2(end.x, end.y), ImColor(color.x, color.y, color.z), 0, 0, line_width);
 }
 
+void DrawList::add_rect(vec2 start, vec2 end, vec4 color) {
+    ImGui::GetBackgroundDrawList()->AddRect(ImVec2(start.x, start.y), ImVec2(end.x, end.y), ImColor(color.x, color.y, color.z, color.w), 0, 0, line_width);
+}
+
 void DrawList::add_rect_filled(vec2 start, vec2 end, vec3 color) {
     ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(start.x, start.y), ImVec2(end.x, end.y), ImColor(color.x, color.y, color.z), 0, 0);
+}
+
+void DrawList::add_rect_filled(vec2 start, vec2 end, vec4 color) {
+    ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(start.x, start.y), ImVec2(end.x, end.y), ImColor(color.x, color.y, color.z, color.w), 0, 0);
 }
 
 void DrawList::add_text(vec2 pos, const char* text, vec3 color) {

@@ -1,6 +1,6 @@
 LIBRARY = lib/libayypex.so
 
-CXXFLAGS=-Wall -std=c++17 -fPIC -shared -I./include/ -I./src/interface-internal/vk_hook/imgui
+CXXFLAGS=-Wall -std=c++17 -fPIC -shared -I./include/ -I./src/interface-internal/vk_hook/imgui -masm=intel
 LDFLAGS=-ldl
 
 SOURCES = $(shell find src -type f -name "*.c*")

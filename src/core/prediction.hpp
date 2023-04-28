@@ -3,6 +3,7 @@
 #include "math.h"
 #include <cmath>
 
+// Prediction is broken
 namespace prediction {
 struct prediction_ctx {
         float launch_velocity, gravity;
@@ -23,6 +24,7 @@ inline bool calculate_pitch(prediction_ctx ctx, vec2 delta, float *pitch) {
     if (std::isnan(theta)) {
         return false;
     }
+    theta += 90 * TO_RADIANS;
     
     *pitch = theta;
 

@@ -11,6 +11,43 @@ inline constexpr float PI = 3.1415926535897932f;
 inline constexpr float TO_RADIANS = PI / 180;
 inline constexpr float TO_DEGREES = 180 / PI;
 
+struct vec2 {
+        float x, y;
+
+        vec2() : x(0), y(0) {}
+        vec2(float x, float y) : x(x), y(y) {}
+
+        vec2 operator+(const vec2 &other) const { return vec2(x + other.x, y + other.y); }
+
+        vec2 operator-(const vec2 &other) const { return vec2(x - other.x, y - other.y); }
+
+        vec2 operator*(float scalar) const { return vec2(x * scalar, y * scalar); }
+
+        vec2 operator/(float scalar) const { return vec2(x / scalar, y / scalar); }
+
+        bool is_nan() const { return std::isnan(x) || std::isnan(y); }
+
+        std::string to_string() const {
+            std::ostringstream oss;
+            oss << x << "," << y;
+            return oss.str();
+        }
+
+        float magnitude() const { return std::sqrt(x * x + y * y); }
+
+        vec2 normalize() const {
+            float m = magnitude();
+            return vec2(x / m, y / m);
+        }
+
+        static float distance(const vec2 &a, const vec2 &b) {
+            vec2 diff = a - b;
+            return diff.magnitude();
+        }
+
+        ImVec2 to_imgui() { return {x, y}; }
+};
+
 struct vec3 {
         float x, y, z;
 
@@ -37,6 +74,8 @@ struct vec3 {
 
         vec3 operator*(float a) { return {x * a, y * a, z * a}; }
 
+        bool operator==(vec3 a) { return x == a.x && y == a.y && z == a.z; }
+
         inline float magnitude() { return std::sqrt(x * x + y * y + z * z); }
 
         inline vec3 normalize() {
@@ -57,6 +96,10 @@ struct vec3 {
         inline static vec3 extrapolate(vec3 a, vec3 b, float time) { return a + (b * time); }
 
         inline static vec3 lerp(vec3 a, vec3 b, float t) { return a + (b - a) * t; }
+
+        inline vec2 xy() {
+            return vec2(x,y);
+        }
 };
 
 struct mat4 {
@@ -107,43 +150,6 @@ struct mat3x4 {
     vec3 translation() {
         return { _14, _24, _34 };
     }
-};
-
-struct vec2 {
-        float x, y;
-
-        vec2() : x(0), y(0) {}
-        vec2(float x, float y) : x(x), y(y) {}
-
-        vec2 operator+(const vec2 &other) const { return vec2(x + other.x, y + other.y); }
-
-        vec2 operator-(const vec2 &other) const { return vec2(x - other.x, y - other.y); }
-
-        vec2 operator*(float scalar) const { return vec2(x * scalar, y * scalar); }
-
-        vec2 operator/(float scalar) const { return vec2(x / scalar, y / scalar); }
-
-        bool is_nan() const { return std::isnan(x) || std::isnan(y); }
-
-        std::string to_string() const {
-            std::ostringstream oss;
-            oss << x << "," << y;
-            return oss.str();
-        }
-
-        float magnitude() const { return std::sqrt(x * x + y * y); }
-
-        vec2 normalize() const {
-            float m = magnitude();
-            return vec2(x / m, y / m);
-        }
-
-        static float distance(const vec2 &a, const vec2 &b) {
-            vec2 diff = a - b;
-            return diff.magnitude();
-        }
-
-        ImVec2 to_imgui() { return {x, y}; }
 };
 
 struct vec4 {
@@ -248,7 +254,6 @@ inline bool world_to_screen(vec3 position, vec2& out) {
 
     out.x = half_screen_size.x + clip.x * half_screen_size.x;
     out.y = half_screen_size.y - clip.y * half_screen_size.y;
-
 
     return true;
 }

@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "offsets.h"
+#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <iostream>
@@ -25,19 +26,29 @@ struct CEntInfo {
         uintptr_t pNext;
 };
 
+struct glow_mode {
+    uint8_t border_mode, general_mode, border_size, unk;
+};
+
 class Entity {
     protected:
     uintptr_t address;
+    int index;
     public:
-    Entity() : address(0) {};
-    Entity(uintptr_t address) : address(address) {}
+    Entity() : address(0), index(0) {};
+    Entity(uintptr_t address, int index) : address(address), index(0) {}
 
     uintptr_t get_address() {
         return address;
     }
 
-    void set_address(uintptr_t addr) {
-        address = addr;
+    int get_index() {
+        return index;
+    }
+
+    void set_address(uintptr_t addr, int index) {
+        this->address = addr;
+        this->index = index;
     }
 
     void invalidate() {
@@ -45,22 +56,69 @@ class Entity {
     }
 
     float get_health() {
-        return mem::read<float>(address + offsets::entity::health);
+        return mem::read<int>(address + offsets::entity::health);
     }
 
-    int get_script_name_index() {
-        return mem::read<float>(address + offsets::entity::script_index);
+    float get_shield() {
+        return mem::read<int>(address + offsets::entity::shield);
+    }
+
+    float get_max_shield() {
+        return mem::read<int>(address + offsets::entity::max_shield);
+    }
+
+    int get_script_id() {
+        return mem::read<int>(address + offsets::entity::script_index);
+    }
+
+    int get_script_name() {
+        return mem::read<int>(address + 0x690);
+    }
+
+    int get_team() {
+        return mem::read<int>(address + offsets::entity::team_id);
+    }
+
+    void enable_glow() {
+        int glow_enabled = mem::read<int>(address + 0x03c8);
+        if (glow_enabled != 1) {
+            mem::write<int>(address + 0x03c8, 1);
+        }
+        int glow_context = mem::read<int>(address + 0x03d0);
+        if (glow_context != 2) {
+            mem::write<int>(address + 0x03d0, 2);
+        }
+
+        const glow_mode default_mode = {101,102,49,75};
+        int default_mode_int = *(int*)&default_mode;
+        if (mem::read<int>(address + 0x02c4) != default_mode_int) {
+            mem::write<glow_mode>(address + 0x02c4, default_mode);
+        }
+    }
+
+    bool is_visible() {
+        if (!valid()) return false;
+        float last_visible_time = mem::read<float>(address + offsets::visibility_check);
+        float current_time = mem::read<float>(BASE + offsets::globals + 0x28);
+        bool visible = last_visible_time > current_time - 0.2f;
+        return visible;
+    }
+
+    void set_glow_color(vec3 color) {
+        vec3 current_color = mem::read<vec3>(address + 0x1d0);
+        if (current_color == color) return;
+        mem::write<vec3>(address + 0x1d0, color);
     }
 
     bool valid() {
         if (!address) return false;
-        if (get_script_name_index() < -1000 || get_script_name_index() > 10000) return false;
+        if (get_script_name() < -1000 || get_script_name() > 100000) return false;
 
         return true;
     }
 
     float get_max_health() {
-        return mem::read<float>(address + offsets::entity::max_health);
+        return mem::read<int>(address + offsets::entity::max_health);
     }
 
     // Gets the position of the entity.
@@ -112,16 +170,16 @@ class Entity {
     inline static Entity get_by_id(int id) {
         uintptr_t entity_list = mem::read<uintptr_t>(BASE + offsets::entity_list);
         if (id < 0 || id >= NUM_ENTS || !entity_list)
-            return Entity(0);
+            return Entity();
         CEntInfo entity_info = mem::read<CEntInfo>(BASE + offsets::entity_list + (id * sizeof(CEntInfo)));
-        return Entity(entity_info.pEntity);
+        return Entity(entity_info.pEntity, id);
     }
 };
 
 class Weapon : public Entity {
     public:
     Weapon() : Entity() {};
-    Weapon(uintptr_t address) : Entity(address) {};
+    Weapon(uintptr_t address) : Entity(address, -1) {};
 
     inline float get_speed() {
         return mem::read<float>(address + offsets::weapon::projectile_speed);
@@ -134,12 +192,24 @@ class Weapon : public Entity {
     inline float get_gravity() {
         return get_gravity_scale() * 750.0f;
     }
+
+    inline bool ready_to_fire() {
+        float current_time = mem::read<float>(BASE + offsets::globals + 0x28);
+        float interval = mem::read<float>(BASE + offsets::globals + 0x30);
+        float next_ready_time = mem::read<float>(address + 0x1648);
+        float next_primary_time = mem::read<float>(address + 0x164c);
+        float ready_time = next_ready_time > next_primary_time ? next_ready_time : next_primary_time;
+        if (current_time >= ready_time - interval) {
+            return true;
+        }
+        return false;
+    }
 };
 
 class Player : public Entity {
     public:
     Player() : Entity() {};
-    Player(uintptr_t address) : Entity(address) {};
+    Player(uintptr_t address, int index) : Entity(address, index) {};
 
     inline uint16_t get_bone_id(const uint32_t &hitbox) {
         auto model = mem::read<uintptr_t>(address + offsets::studiohdr);
@@ -187,6 +257,10 @@ class Player : public Entity {
         return mem::read<vec3>(address + offsets::entity::angles);
     }
 
+    inline vec3 get_recoil() {
+        return mem::read<vec3>(address + offsets::entity::aimpunch);
+    }
+
     inline vec3 get_sway_angles() {
         vec3 sway = mem::read<vec3>(address + offsets::entity::sway_angles);
         vec3 delta = get_angles() - sway;
@@ -194,7 +268,8 @@ class Player : public Entity {
     }
 
     inline void set_angles(vec3 angles) {
-        return mem::write<vec3>(address + offsets::entity::angles, angles);
+        if (angles.is_valid())
+            return mem::write<vec3>(address + offsets::entity::angles, math::normalize_angles(angles));
     }
 
     inline vec3 get_velocity() {
@@ -218,6 +293,16 @@ class Player : public Entity {
         return Weapon();
     }
 };
+
+namespace NetChannel {
+    inline size_t get_choked_packets() {
+        return mem::read<size_t>(BASE + offsets::netchannel + 0x2028);
+    }
+
+    inline void choke(bool state) {
+        mem::write<double>(BASE + offsets::netchannel + 0x2108, state ? FLT_MAX : 0);
+    }
+}
 
 namespace utils {
 inline bool get_box_coords(Entity entity, vec4& out) {

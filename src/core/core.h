@@ -8,6 +8,7 @@
 namespace core {
     extern std::vector<Module*> modules;
     extern std::vector<Entity> entities;
+    extern std::vector<Entity> items;
     extern Player local_player;
     extern std::chrono::high_resolution_clock timer;
     extern std::chrono::high_resolution_clock::time_point last_tick;

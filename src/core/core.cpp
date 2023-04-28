@@ -3,31 +3,32 @@
 #include "draw_list.h"
 #include "mem.h"
 #include "modules/aimassist.h"
+#include "modules/glow.h"
+#include "modules/rcs.h"
 #include "modules/wallhack.h"
 #include "offsets.h"
 #include "sdk.h"
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <exception>
+#include <string>
+#include <sys/types.h>
 #include <vector>
 #include <iostream>
 
 namespace core {
     std::vector<Module*> modules;
     std::vector<Entity> entities;
+    std::vector<Entity> items;
     Player local_player;
     std::chrono::high_resolution_clock timer;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_tick;
 
     void update_entities() {
-        // If mutex is locked, return
-        //if (update_mutex.try_lock() == false) return;
-
-        //std::lock_guard<std::mutex> lock(update_mutex);
-
         short local_player_handle = mem::read<short>(BASE + offsets::local_player_handle);
         if (local_player_handle == -1) return;
-        if (!mem::read<uintptr_t>(BASE + offsets::entity_list)) return;
+        if (mem::read<uintptr_t>(BASE + offsets::entity_list) == 0) return;
 
         entities.clear();
         local_player.invalidate();
@@ -36,7 +37,7 @@ namespace core {
             Entity entity = Entity::get_by_id(i);
             if (entity.valid()) {
                 if (i == local_player_handle) {
-                    local_player.set_address(entity.get_address());
+                    local_player.set_address(entity.get_address(), i);
                     continue;
                 }
 
@@ -47,8 +48,9 @@ namespace core {
 
                 uintptr_t signifier = mem::read<uintptr_t>(signifier_ptr);
 
-                if (signifier == PLAYER || signifier == NPC_DUMMIE)
+                if (signifier == PLAYER || signifier == NPC_DUMMIE) {
                     entities.push_back(entity);
+                }
             }
         }
     }
@@ -72,7 +74,6 @@ namespace core {
         last_tick = now;
 
         tick(delta_time);
-
         if (!local_player.valid()) return;
 
         for (auto& module : modules) {
@@ -82,9 +83,34 @@ namespace core {
         }
     }
 
+    #pragma pack(push,1)
+    struct weaponsetting_t {
+        char* name;
+        void* unk1;
+        char* description;
+        char type;
+        char unk2;
+        ushort index;
+        ushort offset;
+        char null1[2];
+    };
+    #pragma pack(pop)
+
     void init() {
+        uintptr_t weaponsettings = 0x14B364BC0;
+        ptrdiff_t size = 0x20;
+
+        for (int i = 0; i < 1152; i++) {
+            weaponsetting_t setting = mem::read<weaponsetting_t>(weaponsettings + size * i);
+
+            std::cout << "Setting: " << setting.name << std::endl;
+            std::cout << "Offset: " << std::hex << setting.offset << std::endl << std::endl;
+        }
+
         modules.push_back(new Wallhack());
-        modules.push_back(new AimAssist());
+        //modules.push_back(new AimAssist());
+        modules.push_back(new Glow());
+        modules.push_back(new RecoilControl());
 
         for (auto& module : modules) {
             module->init();

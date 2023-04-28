@@ -1,13 +1,13 @@
 #pragma once
 #include "imgui.h"
 #include "vmt_hook.h"
-#include "../core/core.h"
+//#include "../core/core.h"
 #include "createmove.h"
 #include <exception>
 #include <iostream>
 
 inline void onFirstFrame() {
-    init();
+    //init();
     core::init();
 }
 
