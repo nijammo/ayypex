@@ -11,9 +11,7 @@ Currently, ayypex has
 * Wallhack
 * Glow
 * Recoil control
-* Aim Assist (currently broken)
-
-~~The aim assist might be a bit too aggressive, you might want to modify the PID controller coefficients in core/modules/aimassist.h~~
+* Aim Assist with prediction (sway compensation is broken though)
 
 ## Installing
 
@@ -25,6 +23,14 @@ To install the internal version
 * Install with make install
 * Run the game.
 
+## Planned features
+
+* Triggerbot
+* Settings (that can be reloaded at runtime)
+* Spectator count
+* Optimize entitylist reading
+
 ## Credits
 
-Most of the code for the Vulkan layer was taken from Mesa's Vulkan overlay project, but modified for usage on projects like this.
+* MangoHud for their Vulkan layer code, which was modified and shortened for this project.
+* The UnKnoWnCheaTs forum.
