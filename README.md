@@ -51,6 +51,10 @@ Next, you'll need a way to call:
 * The game crashes when leaving a match. (Probably due to aimassist? It started doing that after I re-enabled it...)
 * There is a small chance you will crash when entering a match. (I have no idea why)
 
+## Detection status
+
+I will update this section if I get banned. Most likely feature that could get you banned is aim assist or recoil control.
+
 ## Credits
 
 * MangoHud for their Vulkan layer code, which was modified and shortened for this project.
