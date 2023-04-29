@@ -33,6 +33,11 @@ To install the internal version,
 * Item glow 
 * Optimize entitylist reading (not really needed since we're internal, but it's nice to have)
 
+## Bugs
+
+* The game crashes when leaving a match. (Probably due to aimassist? It started doing that after I re-enabled it...)
+* There is a small chance you will crash when entering a match. (I have no idea why)
+
 ## Credits
 
 * MangoHud for their Vulkan layer code, which was modified and shortened for this project.
