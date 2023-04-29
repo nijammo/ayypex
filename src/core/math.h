@@ -1,11 +1,11 @@
 #pragma once
 #include "imgui.h"
+#include "mem.h"
+#include "offsets.h"
 #include <cmath>
 #include <cstdint>
 #include <sstream>
 #include <string>
-#include "mem.h"
-#include "offsets.h"
 
 inline constexpr float PI = 3.1415926535897932f;
 inline constexpr float TO_RADIANS = PI / 180;
@@ -97,128 +97,155 @@ struct vec3 {
 
         inline static vec3 lerp(vec3 a, vec3 b, float t) { return a + (b - a) * t; }
 
-        inline vec2 xy() {
-            return vec2(x,y);
-        }
+        inline vec2 xy() { return vec2(x, y); }
 };
 
 struct mat4 {
-    union {
-        struct {
-            float _11;
-            float _12;
-            float _13;
-            float _14;
-            float _21;
-            float _22;
-            float _23;
-            float _24;
-            float _31;
-            float _32;
-            float _33;
-            float _34;
-            float _41;
-            float _42;
-            float _43;
-            float _44;
+        union {
+                struct {
+                        float _11;
+                        float _12;
+                        float _13;
+                        float _14;
+                        float _21;
+                        float _22;
+                        float _23;
+                        float _24;
+                        float _31;
+                        float _32;
+                        float _33;
+                        float _34;
+                        float _41;
+                        float _42;
+                        float _43;
+                        float _44;
+                };
+                float m[4][4];
+                float mm[16];
         };
-        float m[4][4];
-        float mm[16];
-    };
 };
 
 struct mat3x4 {
-    union {
-        struct {
-            float _11;
-            float _12;
-            float _13;
-            float _14;
-            float _21;
-            float _22;
-            float _23;
-            float _24;
-            float _31;
-            float _32;
-            float _33;
-            float _34;
+        union {
+                struct {
+                        float _11;
+                        float _12;
+                        float _13;
+                        float _14;
+                        float _21;
+                        float _22;
+                        float _23;
+                        float _24;
+                        float _31;
+                        float _32;
+                        float _33;
+                        float _34;
+                };
+                float m[3][4];
+                float mm[12];
         };
-        float m[3][4];
-        float mm[12];
-    };
 
-    vec3 translation() {
-        return { _14, _24, _34 };
-    }
+        vec3 translation() { return {_14, _24, _34}; }
 };
 
 struct vec4 {
-    float x, y, z, w;
+        float x, y, z, w;
 
-    vec4() : x(0), y(0), z(0), w(0) {}
-    vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+        vec4() : x(0), y(0), z(0), w(0) {}
+        vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
-    vec4 operator+(const vec4 &other) const { return vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
+        vec4 operator+(const vec4 &other) const { return vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
 
-    vec4 operator-(const vec4 &other) const { return vec4(x - other.x, y - other.y, z - other.z, w - other.w); }
+        vec4 operator-(const vec4 &other) const { return vec4(x - other.x, y - other.y, z - other.z, w - other.w); }
 
-    vec4 operator*(float scalar) const { return vec4(x * scalar, y * scalar, z * scalar, w * scalar); }
+        vec4 operator*(float scalar) const { return vec4(x * scalar, y * scalar, z * scalar, w * scalar); }
 
-    vec4 operator/(float scalar) const { return vec4(x / scalar, y / scalar, z / scalar, w / scalar); }
+        vec4 operator/(float scalar) const { return vec4(x / scalar, y / scalar, z / scalar, w / scalar); }
 
-    bool is_nan() const { return std::isnan(x) || std::isnan(y) || std::isnan(z) || std::isnan(w); }
+        bool is_nan() const { return std::isnan(x) || std::isnan(y) || std::isnan(z) || std::isnan(w); }
 
-    std::string to_string() const {
-        std::ostringstream oss;
-        oss << x << "," << y << "," << z << "," << w;
-        return oss.str();
-    }
+        std::string to_string() const {
+            std::ostringstream oss;
+            oss << x << "," << y << "," << z << "," << w;
+            return oss.str();
+        }
 
-    float magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+        float magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
 
-    vec4 normalize() const {
-        float m = magnitude();
-        return vec4(x / m, y / m, z / m, w / m);
-    }
+        vec4 normalize() const {
+            float m = magnitude();
+            return vec4(x / m, y / m, z / m, w / m);
+        }
 
-    static float distance(const vec4 &a, const vec4 &b) {
-        vec4 diff = a - b;
-        return diff.magnitude();
-    }
+        static float distance(const vec4 &a, const vec4 &b) {
+            vec4 diff = a - b;
+            return diff.magnitude();
+        }
 
-    ImVec4 to_imgui() { return {x, y, z, w}; }
+        ImVec4 to_imgui() { return {x, y, z, w}; }
 
-    vec3 xyz() { return {x, y, z}; }
+        vec3 xyz() { return {x, y, z}; }
 
-    vec2 xy() { return {x, y}; }
+        vec2 xy() { return {x, y}; }
 
-    vec2 zw() { return {z, w}; }
+        vec2 zw() { return {z, w}; }
 
-    vec4 transform(mat4 matrix) {
-        vec4 result;
-        result.x = x * matrix._11 + y * matrix._12 + z * matrix._13 + w * matrix._14;
-        result.y = x * matrix._21 + y * matrix._22 + z * matrix._23 + w * matrix._24;
-        result.z = x * matrix._31 + y * matrix._32 + z * matrix._33 + w * matrix._34;
-        result.w = x * matrix._41 + y * matrix._42 + z * matrix._43 + w * matrix._44;
-        return result;
-    }
+        vec4 transform(mat4 matrix) {
+            vec4 result;
+            result.x = x * matrix._11 + y * matrix._12 + z * matrix._13 + w * matrix._14;
+            result.y = x * matrix._21 + y * matrix._22 + z * matrix._23 + w * matrix._24;
+            result.z = x * matrix._31 + y * matrix._32 + z * matrix._33 + w * matrix._34;
+            result.w = x * matrix._41 + y * matrix._42 + z * matrix._43 + w * matrix._44;
+            return result;
+        }
 };
 
 namespace math {
-inline static vec3 normalize_angles(vec3 angles) {
-    while (angles.x > 89.0f) {
-        angles.x -= 180.0f;
+inline vec3 normalize_angles(vec3 angle) {
+    while (angle.x > 89.0f)
+        angle.x -= 180.f;
+
+    while (angle.x < -89.0f)
+        angle.x += 180.f;
+
+    while (angle.y > 180.f)
+        angle.y -= 360.f;
+
+    while (angle.y < -180.f) {
+        angle.y += 360.f;
     }
-    while (angles.x < -89.0f) {
-        angles.x += 180.0f;
-    }
-    while (angles.y > 180.0f) {
-        angles.y -= 360.0f;
-    }
-    while (angles.y < -180.0f) {
-        angles.y += 360.0f;
-    }
-    angles.z = 0.0f;
+
+    angle.z = 0.0f;
+    return angle;
+}
+
+inline static vec3 VectorAngles( vec3 forward, vec3 angles )
+{
+	float	tmp, yaw, pitch;
+	
+	if (forward.y == 0 && forward.x == 0)
+	{
+		yaw = 0;
+		if (forward.z > 0)
+			pitch = 270;
+		else
+			pitch = 90;
+	}
+	else
+	{
+		yaw = (atan2(forward.y, forward.x) * 180 / M_PI);
+		if (yaw < 0)
+			yaw += 360;
+
+		tmp = sqrt (forward.x*forward.x + forward.y*forward.y);
+		pitch = (atan2(-forward.z, tmp) * 180 / M_PI);
+		if (pitch < 0)
+			pitch += 360;
+	}
+	
+	angles.x = pitch;
+	angles.y = yaw;
+	angles.z = 0;
     return angles;
 }
 
@@ -235,22 +262,25 @@ inline static vec3 get_view_delta(vec3 src, vec3 dst, vec3 angles) {
     return calculate_angles(src, dst) - angles;
 }
 
-inline bool world_to_screen(vec3 position, vec2& out) {
+inline bool world_to_screen(vec3 position, vec2 &out) {
     const auto viewrenderer = mem::read<uintptr_t>(BASE + offsets::viewrenderer);
-    if (!viewrenderer) return false;
+    if (!viewrenderer)
+        return false;
 
     const auto matrix_ptr = mem::read<uintptr_t>(viewrenderer + offsets::viewmatrix);
-    if (!matrix_ptr) return false;
+    if (!matrix_ptr)
+        return false;
 
     mat4 matrix = mem::read<mat4>(matrix_ptr);
     vec4 clip = vec4(position.x, position.y, position.z, 1.0f).transform(matrix);
 
-    if (clip.w < 0.01f) return false;
+    if (clip.w < 0.01f)
+        return false;
 
     clip.x = clip.x * (1 / clip.w);
     clip.y = clip.y * (1 / clip.w);
 
-    vec2 half_screen_size = {1920.f/2, 1080.f/2};
+    vec2 half_screen_size = {1920.f / 2, 1080.f / 2};
 
     out.x = half_screen_size.x + clip.x * half_screen_size.x;
     out.y = half_screen_size.y - clip.y * half_screen_size.y;

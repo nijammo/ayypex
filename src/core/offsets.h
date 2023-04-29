@@ -22,6 +22,8 @@ namespace offsets {
 
     inline constexpr ptrdiff_t visibility_check = 0x1A78;
 
+    inline constexpr ptrdiff_t zoom_fov = 0xbc;
+
     namespace entity {
         constexpr ptrdiff_t health = 0x43c;             //m_iHealth
         constexpr ptrdiff_t shield = 0x170;
@@ -31,13 +33,13 @@ namespace offsets {
         constexpr ptrdiff_t collision_min = 0x04c0+0x10;//m_Collision + 0x10
         constexpr ptrdiff_t collision_max = 0x04c0+0x1c;//m_Collision + 0x1c
         constexpr ptrdiff_t abs_origin = 0x14c;         //m_vecAbsOrigin
-        constexpr ptrdiff_t velocity = 0x0488;          //m_vecAbsVelocity
+        constexpr ptrdiff_t velocity = 0x0140;          //m_vecAbsVelocity
         constexpr ptrdiff_t name = 0x0580;              //m_iName
         constexpr ptrdiff_t latest_primary_weapons = 0x1a1c;
         constexpr ptrdiff_t camera_origin = 0x1f48;
         constexpr ptrdiff_t ammo_pool_capacity = 0x25ac;
         constexpr ptrdiff_t angles = ammo_pool_capacity - 0x14;
-        constexpr ptrdiff_t sway_angles = ammo_pool_capacity - 0x14 - 0x10;
+        constexpr ptrdiff_t sway_angles = ammo_pool_capacity - 0x14 + 0x10;
         constexpr ptrdiff_t zooming = 0x1c51;
         constexpr ptrdiff_t script_index = 0x1648;
         constexpr ptrdiff_t team_id = 0x044c;

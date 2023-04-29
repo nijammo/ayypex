@@ -14,53 +14,47 @@ struct prediction_ctx {
         bool success;
 };
 
-inline bool calculate_pitch(prediction_ctx ctx, vec2 delta, float *pitch) {
-    float v = ctx.launch_velocity;
-    float g = ctx.gravity;
-    float x = delta.x;
-    float y = delta.y;
-
-    float theta = std::atan((v * v + std::sqrt(v * v * v * v - g * (g * x * x + 2 * y * v * v))) / (g * x));
-    if (std::isnan(theta)) {
+inline bool optimal(float x, float y, float v0, float g, float &pitch) {
+    const float root = v0 * v0 * v0 * v0 - g * (g * x * x + 2.0f * y * v0 * v0);
+    if (root < 0.0f) {
         return false;
     }
-    theta += 90 * TO_RADIANS;
-    
-    *pitch = theta;
-
+    pitch = atan((v0 * v0 - sqrt(root)) / (g * x));
     return true;
 }
 
-inline bool solve_trajectory(vec3 currentPosition, vec3 extrapolatedPosition, prediction_ctx &ctx) {
-    vec3 delta = extrapolatedPosition - currentPosition;
-    vec2 delta2d = {std::sqrt(delta.x * delta.x + delta.y * delta.y), delta.z};
-
-    float pitch;
-    if (!calculate_pitch(ctx, delta2d, &pitch)) {
+inline bool solve_trajectory(vec3 target, prediction_ctx &ctx) {
+    vec3 v = ctx.launch_position - target;
+    const float dx = sqrt(v.x * v.x + v.y * v.y);
+    const float dy = v.z;
+    const float v0 = ctx.launch_velocity;
+    const float g = ctx.gravity;
+    if (!optimal(dx, dy, v0, g, ctx.pitch)) {
         return false;
     }
-
-    ctx.time_of_flight = delta2d.x / (std::cos(pitch) * ctx.launch_velocity);
-
-    ctx.angles.y = std::atan2(delta.y, delta.x) * TO_DEGREES;
-    ctx.angles.x = -pitch * TO_DEGREES;
-    ctx.angles.z = 0;
-
+    ctx.time_of_flight = dx / (cos(ctx.pitch) * v0);
+    ctx.success = true;
+    ctx.angles.x = ctx.pitch * TO_DEGREES;
+    ctx.angles.y = -std::atan2(v.x, v.y) * TO_DEGREES - 90.0f;
+    ctx.angles.z = 0.0f;
+    ctx.angles = math::normalize_angles(ctx.angles);
     return true;
 }
 
 inline bool predict_trajectory(prediction_ctx &ctx) {
-    // Calculate travel time to current target
-    vec2 displacement = {std::sqrt(ctx.target_velocity.x * ctx.target_velocity.x + ctx.target_velocity.y * ctx.target_velocity.y), ctx.target_velocity.z};
-    float flight_time = displacement.x / (std::cos(ctx.pitch) * ctx.launch_velocity);
+    static const float MAX_TIME = 1.0f;
+    static const float TIME_STEP = 1.0 / 256.0f;
 
-    // Calculate new travel time after extrapolation
-    vec3 extrapolated = vec3::extrapolate(ctx.target_position, ctx.target_velocity, flight_time);
-    displacement = {std::sqrt(extrapolated.x * extrapolated.x + extrapolated.y * extrapolated.y), extrapolated.z};
+    for (float target_time = 0.0f; target_time <= MAX_TIME; target_time += TIME_STEP) {
+        const auto target_pos = vec3::extrapolate(ctx.target_position, ctx.target_velocity, target_time);
 
-    flight_time = displacement.x / (std::cos(ctx.pitch) * ctx.launch_velocity);
-
-    ctx.success = solve_trajectory(ctx.target_position, extrapolated, ctx);
-    return ctx.success;
+        if (!solve_trajectory(target_pos, ctx)) {
+            return false;
+        }
+        if (ctx.time_of_flight < target_time) {
+            return true;
+        }
+    }
+    return false;
 }
-} // namespace siege::prediction
+} // namespace prediction

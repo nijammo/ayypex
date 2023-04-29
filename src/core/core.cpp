@@ -5,6 +5,7 @@
 #include "modules/aimassist.h"
 #include "modules/glow.h"
 #include "modules/rcs.h"
+#include "modules/triggerbot.h"
 #include "modules/wallhack.h"
 #include "offsets.h"
 #include "sdk.h"
@@ -103,14 +104,15 @@ namespace core {
         for (int i = 0; i < 1152; i++) {
             weaponsetting_t setting = mem::read<weaponsetting_t>(weaponsettings + size * i);
 
-            std::cout << "Setting: " << setting.name << std::endl;
-            std::cout << "Offset: " << std::hex << setting.offset << std::endl << std::endl;
+            //std::cout << "Setting: " << setting.name << std::endl;
+            //std::cout << "Offset: " << std::hex << setting.offset << std::endl << std::endl;
         }
 
         modules.push_back(new Wallhack());
-        //modules.push_back(new AimAssist());
+        modules.push_back(new AimAssist());
         modules.push_back(new Glow());
         modules.push_back(new RecoilControl());
+        //modules.push_back(new Triggerbot());
 
         for (auto& module : modules) {
             module->init();

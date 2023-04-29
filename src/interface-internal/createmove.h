@@ -147,7 +147,7 @@ inline void func_copy(uintptr_t address, char* func, size_t length) {
 
 inline void init() {
     uintptr_t addr = 0x14efbc000;
-    func_copy(addr, (char*)&_1337, 0x1000);
+    func_copy(addr, (char*)&_1337, 0x1000); // Crash
     uintptr_t cinput = 0x1420a9960;
     uintptr_t vtable_idx6 = (cinput + 0x8 * 6); // CInput::WriteUsercmdDeltaToBuffer
     *(uintptr_t*)vtable_idx6 = addr;

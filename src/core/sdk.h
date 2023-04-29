@@ -193,6 +193,10 @@ class Weapon : public Entity {
         return get_gravity_scale() * 750.0f;
     }
 
+    inline float get_zoom_fov() {
+        return mem::read<float>(address + offsets::zoom_fov);
+    }
+
     inline bool ready_to_fire() {
         float current_time = mem::read<float>(BASE + offsets::globals + 0x28);
         float interval = mem::read<float>(BASE + offsets::globals + 0x30);
@@ -205,6 +209,49 @@ class Weapon : public Entity {
         return false;
     }
 };
+
+struct kbutton_t {
+    int down[2];
+    int state;
+};
+
+struct Button {
+    uintptr_t address;
+    kbutton_t button;
+    bool state;
+    bool force;
+    bool press;
+    bool release;
+
+    Button(uintptr_t address) : address(address), force(false), press(false), release(false) {
+    }
+
+    inline void update() {
+        button = mem::read<kbutton_t>(address);
+        state = (button.state & 1) != 0;
+    }
+
+    inline void post() {
+        if (force) {
+            int state;
+            if (press && !release) {
+                state = 5;
+            }
+            else if (!press && release) {
+                state = 4;
+            }
+            else  {
+                state = button.down[0] == 0 && button.down[1] == 0 ? 4 : 5;
+            }
+
+            if (state != button.state) {
+                mem::write<int>(address + 8, state);
+            }
+        }
+    }
+};
+
+inline Button InAttack(BASE + offsets::in_attack);
 
 class Player : public Entity {
     public:
@@ -261,10 +308,9 @@ class Player : public Entity {
         return mem::read<vec3>(address + offsets::entity::aimpunch);
     }
 
-    inline vec3 get_sway_angles() {
-        vec3 sway = mem::read<vec3>(address + offsets::entity::sway_angles);
-        vec3 delta = get_angles() - sway;
-        return delta;
+    inline vec3 get_sway() {
+        vec3 sway = mem::read<vec3>(address + 0x2588);
+        return sway - get_angles();
     }
 
     inline void set_angles(vec3 angles) {
@@ -292,6 +338,16 @@ class Player : public Entity {
 
         return Weapon();
     }
+
+    void shoot() {
+        bool ready_to_fire = this->get_held_weapon().ready_to_fire();
+        if (ready_to_fire) {
+            InAttack.force = true;
+            InAttack.press = true;
+            InAttack.post();
+
+        }
+    }
 };
 
 namespace NetChannel {
@@ -301,6 +357,12 @@ namespace NetChannel {
 
     inline void choke(bool state) {
         mem::write<double>(BASE + offsets::netchannel + 0x2108, state ? FLT_MAX : 0);
+    }
+}
+
+namespace Game {
+    inline float get_current_time() {
+        return mem::read<float>(BASE + offsets::globals + 0x28);
     }
 }
 

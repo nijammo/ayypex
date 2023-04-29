@@ -19,3 +19,6 @@ debug:
 
 clean:
 	rm -f $(LIBRARY)
+
+clear:
+	rm /data/SteamLibrary/steamapps/compatdata/1172470/pfx/drive_c/users/steamuser/Saved\ Games/Respawn/Apex/assets/temp/netparams
