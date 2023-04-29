@@ -26,6 +26,7 @@ To install the internal version,
 
 ## Porting to external
 I haven't done this! But it should work...
+
 Files that need to be changed:
 * src/core/mem.h
 * src/core/draw_list.cpp
