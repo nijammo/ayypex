@@ -1,8 +1,7 @@
 # ayypex
 
 A cheat for Apex Legends, for use with Proton on Linux.
-It is internal, using a Vulkan layer to render directly on the game's window.
-The cheat itself should be portable, meaning that if you can provide it with a on-draw, on-tick function and change the memory interface then it should be able to also run externally. (Untested! Entitylist parsing might be really inefficient.)
+It is internal, using a Vulkan layer to render directly on the game's window, like how MangoHud does it.
 
 ## Features
 
@@ -21,7 +20,7 @@ To install the internal version,
 
 * Move the ayypex.json file to /usr/share/vulkan/implicit_layer.d
 * Add AYYPEX=1 %command% to launch options in Steam
-* Compile with ma    auto get_fov_scale = [&weapon]() {ke
+* Compile with make
 * Install with make install
 * Run the game.
 
@@ -30,6 +29,7 @@ I haven't done this! But it should work...
 Files that need to be changed:
 * src/core/mem.h
 * src/core/draw_list.cpp
+
 Next, you'll need a way to call:
 * core::tick(float delta_time) (delta_time should be in seconds)
 * core::draw()                 (You'll need to write some kind of overlay)
