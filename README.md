@@ -21,17 +21,30 @@ To install the internal version,
 
 * Move the ayypex.json file to /usr/share/vulkan/implicit_layer.d
 * Add AYYPEX=1 %command% to launch options in Steam
-* Compile with make
+* Compile with ma    auto get_fov_scale = [&weapon]() {ke
 * Install with make install
 * Run the game.
 
-## Planned features
+## Porting to external
+I haven't done this! But it should work...
+Files that need to be changed:
+* src/core/mem.h
+* src/core/draw_list.cpp
+Next, you'll need a way to call:
+* core::tick(float delta_time) (delta_time should be in seconds)
+* core::draw()                 (You'll need to write some kind of overlay)
+* core::init()                 (Simply call this when your cheat starts.)
 
-* Triggerbot
+## Planned features
+(In order of importance)
+
 * Settings (that can be reloaded at runtime)
+* Triggerbot
 * Spectator count
-* Item glow 
+* Item glow
 * Optimize entitylist reading (not really needed since we're internal, but it's nice to have)
+* Netvar dumper
+* Use mouse movement instead of writing to viewangles
 
 ## Bugs
 
