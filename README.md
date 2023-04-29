@@ -28,12 +28,11 @@ To install the internal version,
 I haven't done this! But it should work...
 
 Files that need to be changed:
-* src/core/mem.h
-* src/core/draw_list.cpp
+* src/core/mem.h (Replace mem::read and mem::write)
 
 Next, you'll need a way to call:
 * core::tick(float delta_time) (delta_time should be in seconds)
-* core::draw()                 (You'll need to write some kind of overlay)
+* core::draw()                 (You'll need to write some kind of overlay with ImGui)
 * core::init()                 (Simply call this when your cheat starts.)
 
 ## Planned features
