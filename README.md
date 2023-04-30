@@ -28,12 +28,11 @@ To install the internal version,
 I haven't done this! But it should work...
 
 Files that need to be changed:
-* src/core/mem.h
-* src/core/draw_list.cpp
+* src/core/mem.h (Replace mem::read and mem::write)
 
 Next, you'll need a way to call:
 * core::tick(float delta_time) (delta_time should be in seconds)
-* core::draw()                 (You'll need to write some kind of overlay)
+* core::draw()                 (You'll need to write some kind of overlay with ImGui)
 * core::init()                 (Simply call this when your cheat starts.)
 
 ## Planned features
@@ -51,6 +50,10 @@ Next, you'll need a way to call:
 
 * The game crashes when leaving a match. (Probably due to aimassist? It started doing that after I re-enabled it...)
 * There is a small chance you will crash when entering a match. (I have no idea why)
+
+## Detection status
+
+I will update this section if I get banned. Most likely feature that could get you banned is aim assist or recoil control. However, I've been using an earlier development version of this with wallhack only for about a month and I'm yet to be banned.
 
 ## Credits
 
