@@ -8,6 +8,7 @@ SOURCES = $(shell find src -type f -name "*.c*")
 .PHONY: all clean install
 
 all:
+	mkdir -p lib
 	$(CXX) $(LDFLAGS) $(CXXFLAGS) $(SOURCES) -o $(LIBRARY)
 
 install:
@@ -19,6 +20,3 @@ debug:
 
 clean:
 	rm -f $(LIBRARY)
-
-clear:
-	rm /data/SteamLibrary/steamapps/compatdata/1172470/pfx/drive_c/users/steamuser/Saved\ Games/Respawn/Apex/assets/temp/netparams

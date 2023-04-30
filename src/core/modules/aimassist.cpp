@@ -85,7 +85,7 @@ void AimAssist::tick(float delta_time) {
 
         float aim_strength = 2.2f;
 
-        vec3 sway = core::local_player.get_sway() * 1.0f;
+        vec3 sway = core::local_player.get_recoil() * 1.0f;
         
         float speed = logf(aim_strength + delta / (fov_scale * fov_scale) * aim_strength) * aim_strength + aim_strength;
 
