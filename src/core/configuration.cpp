@@ -21,14 +21,15 @@ void reload(std::string path) {
 }
 
 void init() {
-    std::string home_dir = getpwuid(getuid())->pw_dir;
+    std::string _cfg = std::string(getpwuid(getuid())->pw_dir) + "/ayypex_settings.json";
+    const char* config_path = _cfg.c_str();
 
-    logger::info("Loading configuration from %s", (home_dir + "/ayypex_settings.json").c_str());
+    logger::info("Loading configuration from %s", config_path);
 
-    reload((home_dir + "/ayypex_settings.json").c_str());
+    reload(config_path);
 
     // Start watching for changes
-    std::thread inotify_thread([home_dir]() {
+    std::thread inotify_thread([config_path]() {
         int fd = inotify_init();
         if (fd < 0) {
             logger::error("Failed to initialize inotify");
@@ -36,7 +37,7 @@ void init() {
         }
         logger::info("Initialized inotify");
 
-        int wd = inotify_add_watch(fd, (home_dir + "/ayypex_settings.json").c_str(), IN_MODIFY);
+        int wd = inotify_add_watch(fd, config_path, IN_MODIFY);
         if (wd < 0) {
             logger::error("Failed to add inotify watch");
             return;
@@ -56,7 +57,7 @@ void init() {
                 inotify_event *event = (inotify_event *)&buffer[i];
                 if (event->mask & IN_MODIFY) {
                     logger::info("Reloading configuration");
-                    reload((home_dir + "/ayypex_settings.json").c_str());
+                    reload(config_path);
                 }
                 i += sizeof(inotify_event) + event->len;
             }
