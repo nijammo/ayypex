@@ -1,4 +1,5 @@
 #include "configuration.h"
+#include "logging.h"
 
 #include <math.h>
 #include <thread>
@@ -35,14 +36,14 @@ void init() {
             logger::error("Failed to initialize inotify");
             return;
         }
-        logger::info("Initialized inotify");
+        logger::debug("Initialized inotify");
 
         int wd = inotify_add_watch(fd, config_path, IN_MODIFY);
         if (wd < 0) {
             logger::error("Failed to add inotify watch");
             return;
         }
-        logger::info("Added inotify watch");
+        logger::debug("Added inotify watch");
 
         char buffer[1024];
         while (true) {
@@ -56,7 +57,7 @@ void init() {
             while (i < length - 1) {
                 inotify_event *event = (inotify_event *)&buffer[i];
                 if (event->mask & IN_MODIFY) {
-                    logger::info("Reloading configuration");
+                    logger::debug("Reloading configuration");
                     reload(config_path);
                 }
                 i += sizeof(inotify_event) + event->len;
