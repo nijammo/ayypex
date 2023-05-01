@@ -12,7 +12,7 @@ Currently, ayypex has:
 * Recoil control
 * Aim Assist with prediction (sway compensation is broken though)
 
-The cheat will try to read settings from ~/ayypex_settings.json, but if a setting is not found, a default is used instead. A sample settings file is included.
+The cheat will try to read settings from ~/ayypex_settings.json, but if a setting is not found, a default is used instead. It also detects when the settings file is changed. A sample settings file is included.
 
 ## Installing
 
