@@ -54,7 +54,7 @@ Next, you'll need a way to call:
 
 ## Detection status
 
-I will update this section if I get banned. Most likely feature that could get you banned is aim assist or recoil control. However, I've been using an earlier development version of this with wallhack only for about a month and I'm yet to be banned.
+I will update this section if I get banned. Most likely feature that could get you banned is aim assist or recoil control. However, I've been using an earlier development version of this with only wallhack for about a month and I'm yet to be banned.
 
 ## Credits
 
