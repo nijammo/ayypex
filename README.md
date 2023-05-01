@@ -12,7 +12,7 @@ Currently, ayypex has:
 * Recoil control
 * Aim Assist with prediction (sway compensation is broken though)
 
-Currently, all the settings are hardcoded. A settings file is a planned feature though.
+The cheat will try to read settings from ~/ayypex_settings.json, but if a setting is not found, a default is used instead. A sample settings file is included.
 
 ## Installing
 
@@ -38,7 +38,7 @@ Next, you'll need a way to call:
 ## Planned features
 (In order of importance)
 
-* Settings (that can be reloaded at runtime)
+* ~~Settings (that can be reloaded at runtime)~~
 * Triggerbot
 * Spectator count
 * Item glow

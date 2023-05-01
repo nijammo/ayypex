@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include "../configuration.h"
 
 using prediction::prediction_ctx;
 
@@ -48,8 +49,6 @@ void AimAssist::tick(float delta_time) {
     if (!target.valid())
         return;
     
-    float distance = math::get_view_delta(core::local_player.get_camera_position(), target.get_bone(), core::local_player.get_angles()).magnitude();
-
     if (!core::local_player.is_zooming())
         return;
     
@@ -79,18 +78,16 @@ void AimAssist::tick(float delta_time) {
     if (ctx.success) {
         float delta = (core::local_player.get_angles() - ctx.angles).magnitude();
         float fov_scale = get_fov_scale();
-        if (delta < 0.3f * fov_scale) {
+        if (delta < configuration::get_or_default<float>("aim_assist/deadzone", 0.3f) * fov_scale) {
             return;
         }
 
-        float aim_strength = 2.2f;
-
-        vec3 sway = core::local_player.get_recoil() * 1.0f;
+        float aim_strength = configuration::get_or_default<float>("aim_assist/aim_strength", 2.2f);
         
         float speed = logf(aim_strength + delta / (fov_scale * fov_scale) * aim_strength) * aim_strength + aim_strength;
 
         vec3 delta_angles = ctx.angles - core::local_player.get_angles();
-        vec3 angles = (delta_angles + sway)* speed * delta_time;
+        vec3 angles = delta_angles * speed * delta_time;
 
         vec3 current_angles = core::local_player.get_angles();
         core::local_player.set_angles(current_angles + angles);

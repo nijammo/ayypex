@@ -1,5 +1,6 @@
 #include "core.h"
 
+#include "configuration.h"
 #include "draw_list.h"
 #include "mem.h"
 #include "modules/aimassist.h"
@@ -15,8 +16,11 @@
 #include <exception>
 #include <string>
 #include <sys/types.h>
+#include <thread>
+#include <unistd.h>
 #include <vector>
 #include <iostream>
+#include <sys/inotify.h>
 
 namespace core {
     std::vector<Module*> modules;
@@ -117,5 +121,9 @@ namespace core {
         for (auto& module : modules) {
             module->init();
         }
+
+        logger::info("Initialized %d modules", modules.size());
+
+        configuration::init();
     }
 }
