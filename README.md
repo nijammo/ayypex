@@ -43,7 +43,7 @@ Next, you'll need a way to call:
 * Spectator count
 * Item glow
 * Optimize entitylist reading (not really needed since we're internal, but it's nice to have)
-* Netvar dumper
+* Read offsets from INI file
 * Use mouse movement instead of writing to viewangles
 
 ## Bugs
