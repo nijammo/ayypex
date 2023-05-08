@@ -1,3 +1,5 @@
+This project is very hard to maintain, it crashes all the time and it's a pain to restart the game every time you need to reload the cheat to check if new features work or not. For this reason, I'm making an external version which should be much easier to develop: --github repo is currently empty--, and this project is for the foreseeable future semi-abandoned.
+
 # ayypex
 
 A cheat for Apex Legends, for use with Proton on Linux.
